@@ -24,6 +24,6 @@
 - Status: Completed
 - Completed: Scoring engine and endpoint implemented.
 - Completed: Added automated backend core tests for validation, fallback behavior, and score bounds.
-- Pending: Expand test coverage for additional edge cases and CORS assertions.
+- Completed: Expanded test coverage with edge cases (grade mapping, breakdown keys, score bounds per category), CORS header assertions, health endpoint, 422 validation, fallback roadmap structure, and empty-goals handling.
 - Risks: Formula weight calibration may need user feedback.
 - Next Step: LLM roadmap stability hardening.
