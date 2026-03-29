@@ -108,7 +108,7 @@ Response body:
     "tax_moves": ["..."],
     "risks": ["..."]
   },
-  "model_used": "gemini-1.5-flash",
+  "model_used": "gemini-2.5-flash",
   "fallback_used": false,
   "notes": "Generated using configured LLM provider."
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 const REQUEST_TIMEOUT_MS = 20000;
@@ -178,6 +178,21 @@ function getScoreLabel(score) {
   return "Urgent";
 }
 
+function formatListItem(item) {
+  if (item == null) return "";
+  if (typeof item === "string") return item;
+  if (typeof item === "number") return String(item);
+  if (Array.isArray(item)) {
+    return item.map((entry) => formatListItem(entry)).join(", ");
+  }
+  if (typeof item === "object") {
+    return Object.entries(item)
+      .map(([key, value]) => `${formatLabel(key)}: ${formatListItem(value)}`)
+      .join(" | ");
+  }
+  return String(item);
+}
+
 function RingMeter({ value, label, size = 168, strokeWidth = 14 }) {
   const normalizedValue = Math.max(0, Math.min(100, Number(value) || 0));
   const radius = (size - strokeWidth) / 2;
@@ -220,6 +235,86 @@ function RoadmapSection({ title, defaultOpen = false, children }) {
   );
 }
 
+function RoadmapTrend({ profile, roadmap }) {
+  const points = useMemo(() => {
+    const yearsToFire = Math.max(8, Math.min(20, Number(profile.retirement_age) - Number(profile.age) || 12));
+    const monthlyIncome = Number(profile.monthly_salary) + Number(profile.monthly_side_income);
+    const monthlyExpenses = Number(profile.fixed_expenses) + Number(profile.variable_expenses) + Number(profile.annual_expenses) / 12;
+    const annualContribution = Math.max(0, (monthlyIncome - monthlyExpenses) * 12 * 0.65);
+
+    let corpus = Math.max(0, Number(profile.existing_investments) + Number(profile.emergency_savings));
+    const annualSeries = [];
+    for (let year = 0; year <= yearsToFire; year += 1) {
+      if (year > 0) {
+        corpus = (corpus + annualContribution) * 1.1;
+      }
+      annualSeries.push({ year, corpus });
+    }
+
+    const sampleCount = 8;
+    const sampled = [];
+    for (let idx = 0; idx < sampleCount; idx += 1) {
+      const seriesIndex = Math.round((idx * (annualSeries.length - 1)) / (sampleCount - 1));
+      sampled.push(annualSeries[seriesIndex]);
+    }
+    return sampled;
+  }, [profile]);
+
+  const maxCorpus = Math.max(...points.map((item) => item.corpus), 1);
+  const targetCorpus = (profile.goals || []).reduce((total, goal) => total + Number(goal.target_amount || 0), 0);
+  const currentCorpus = points[0]?.corpus || 0;
+  const targetLakhs = Math.round(targetCorpus / 100000);
+
+  const polyline = points
+    .map((item, idx) => {
+      const x = (idx / (points.length - 1)) * 100;
+      const y = 86 - (item.corpus / maxCorpus) * 68;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  const modelUsed = roadmap?.model_used || "fallback";
+
+  return (
+    <div className="roadmap-curve-card">
+      <div className="curve-head">
+        <div>
+          <p className="eyebrow">Your FIRE Roadmap</p>
+          <h3>Projected Wealth Path</h3>
+        </div>
+        <span className="curve-badge">FIRE at age {profile.retirement_age}</span>
+      </div>
+
+      <div className="curve-canvas">
+        <svg viewBox="0 0 100 90" preserveAspectRatio="none" role="img" aria-label="Projected roadmap trend line">
+          <line x1="0" y1="86" x2="100" y2="86" className="curve-axis" />
+          <polyline points={polyline} className="curve-line" />
+          {points.map((item, idx) => {
+            const x = (idx / (points.length - 1)) * 100;
+            const y = 86 - (item.corpus / maxCorpus) * 68;
+            return <circle key={`${item.year}-${idx}`} cx={x} cy={y} r="1.2" className="curve-dot" />;
+          })}
+        </svg>
+      </div>
+
+      <div className="curve-footer">
+        <div className="curve-stat">
+          <span>Current Balance</span>
+          <strong>{formatInr(currentCorpus)}</strong>
+        </div>
+        <div className="curve-stat">
+          <span>Target Corpus</span>
+          <strong>{targetLakhs > 0 ? `${targetLakhs}L` : "Defined by goals"}</strong>
+        </div>
+        <div className="curve-stat">
+          <span>Model</span>
+          <strong>{modelUsed}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function NumberInput({ label, name, value, onChange, errorId }) {
   return (
     <label className="field">
@@ -236,6 +331,7 @@ function NumberInput({ label, name, value, onChange, errorId }) {
 }
 
 export default function App() {
+  const [theme, setTheme] = useState(() => localStorage.getItem("finmentor-theme") || "light");
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(false);
@@ -243,6 +339,11 @@ export default function App() {
   const [roadmap, setRoadmap] = useState(null);
   const [error, setError] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
+
+  useEffect(() => {
+    document.body.setAttribute("data-theme", theme);
+    localStorage.setItem("finmentor-theme", theme);
+  }, [theme]);
 
   const progress = useMemo(() => Math.round(((step + 1) / fieldsByStep.length) * 100), [step]);
 
@@ -379,8 +480,20 @@ export default function App() {
   return (
     <div className="page">
       <header className="hero">
-        <h1>FinMentor</h1>
-        <p>AI-powered financial mentor for Indian savers</p>
+        <div className="hero-top">
+          <div>
+            <h1>FinMentor</h1>
+            <p>AI-powered financial mentor for Indian savers</p>
+          </div>
+          <button
+            type="button"
+            className="secondary theme-toggle"
+            onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+            aria-label="Toggle light and dark mode"
+          >
+            {theme === "dark" ? "Switch to Light" : "Switch to Dark"}
+          </button>
+        </div>
       </header>
 
       <section className="card">
@@ -547,8 +660,7 @@ export default function App() {
 
       {roadmap && (
         <section className="card result-card" aria-label="FIRE Roadmap results" aria-live="polite">
-          <h2>FIRE Roadmap</h2>
-          <p>Model: {roadmap.model_used} {roadmap.fallback_used ? "(fallback mode)" : ""}</p>
+          <RoadmapTrend profile={formData} roadmap={roadmap} />
           {roadmap.fallback_used && (
             <p className="fallback-banner" role="alert">LLM response unavailable. Showing deterministic fallback roadmap.</p>
           )}
@@ -586,14 +698,14 @@ export default function App() {
 
             <RoadmapSection title="Year 1 Plan" defaultOpen>
               <ol>
-                {(roadmap.roadmap?.year_1_action_plan || []).map((item) => <li key={item}>{item}</li>)}
+                {(roadmap.roadmap?.year_1_action_plan || []).map((item, index) => <li key={`year-plan-${index}`}>{formatListItem(item)}</li>)}
               </ol>
 
               {risks.length > 0 && (
                 <div className="subsection">
                   <h4>Risks to Watch</h4>
                   <ul className="insight-list">
-                    {risks.map((risk) => <li key={risk}>{risk}</li>)}
+                    {risks.map((risk, index) => <li key={`risk-${index}`}>{formatListItem(risk)}</li>)}
                   </ul>
                 </div>
               )}
@@ -639,7 +751,7 @@ export default function App() {
                 <div className="subsection">
                   <h4>Tax Moves</h4>
                   <ul className="insight-list">
-                    {taxMoves.map((move) => <li key={move}>{move}</li>)}
+                    {taxMoves.map((move, index) => <li key={`tax-${index}`}>{formatListItem(move)}</li>)}
                   </ul>
                 </div>
               )}

@@ -35,7 +35,7 @@ def _get_gemini_api_key() -> str:
 
 def _gemini_generate_roadmap(profile: UserProfileInput) -> dict:
     api_key = _get_gemini_api_key()
-    llm_model = os.getenv("LLM_MODEL", "gemini-1.5-flash")
+    llm_model = os.getenv("LLM_MODEL", "gemini-2.5-flash")
 
     configure(api_key=api_key)
     model = GenerativeModel(llm_model)
@@ -99,7 +99,7 @@ def money_health(profile: UserProfileInput) -> dict:
 @app.post("/api/fire-roadmap", response_model=FireRoadmapResponse)
 def fire_roadmap(profile: UserProfileInput) -> dict:
     fallback = build_fallback_roadmap(profile)
-    llm_model = os.getenv("LLM_MODEL", "gemini-1.5-flash")
+    llm_model = os.getenv("LLM_MODEL", "gemini-2.5-flash")
 
     try:
         roadmap = _gemini_generate_roadmap(profile)
