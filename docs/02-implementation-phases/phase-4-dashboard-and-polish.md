@@ -19,8 +19,8 @@
 
 ## Status
 
-- Status: 95% Complete
+- Status: Completed
 - Completed: Baseline result cards, responsive layout, ring-style score chart, and demo-data helper.
-- Pending: Optional category chart polish and additional accessibility refinements.
+- Completed: Accessibility refinements — aria-live regions on result sections, aria-label on RingMeter SVG, aria-describedby linking error messages to inputs, and unique error message IDs for age, salary growth, and retirement age fields.
 - Risks: Last-mile polish can consume more time than expected.
 - Next Step: Execute testing checklist and finalize deploy.

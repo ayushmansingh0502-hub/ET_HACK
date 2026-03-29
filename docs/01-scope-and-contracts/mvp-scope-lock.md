@@ -23,8 +23,9 @@
 
 ## Status
 
-- Status: In Progress
-- Completed: Initial app scaffold with backend and frontend.
-- Pending: Chart visuals, demo data helper, final deployment.
+- Status: Completed
+- Completed: Full MVP app scaffold with backend and frontend.
+- Completed: Chart visuals (ring meter + category bars), demo data helper, backend test suite expanded.
+- Completed: Accessibility refinements across frontend.
 - Risks: LLM output variability under strict JSON constraints.
-- Next Step: Finalize API contracts and smoke tests.
+- Next Step: Finalize deploy and run full smoke test checklist.

@@ -186,7 +186,7 @@ function RingMeter({ value, label, size = 168, strokeWidth = 14 }) {
 
   return (
     <div className="ring-meter">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`${label}: ${normalizedValue}`}>
         <circle className="ring-meter-track" cx={size / 2} cy={size / 2} r={radius} strokeWidth={strokeWidth} />
         <circle
           className={`ring-meter-fill tone-${getScoreTone(normalizedValue)}`}
@@ -220,11 +220,17 @@ function RoadmapSection({ title, defaultOpen = false, children }) {
   );
 }
 
-function NumberInput({ label, name, value, onChange }) {
+function NumberInput({ label, name, value, onChange, errorId }) {
   return (
     <label className="field">
       <span>{label}</span>
-      <input type="number" name={name} value={value} onChange={onChange} />
+      <input
+        type="number"
+        name={name}
+        value={value}
+        onChange={onChange}
+        aria-describedby={errorId}
+      />
     </label>
   );
 }
@@ -393,8 +399,8 @@ export default function App() {
           <div className="grid">
             <label className="field"><span>Name</span><input name="name" value={formData.name} onChange={handleChange} aria-invalid={Boolean(validationErrors.name)} /></label>
             {validationErrors.name && <p className="field-error">{validationErrors.name}</p>}
-            <NumberInput label="Age" name="age" value={formData.age} onChange={handleChange} />
-            {validationErrors.age && <p className="field-error">{validationErrors.age}</p>}
+            <NumberInput label="Age" name="age" value={formData.age} onChange={handleChange} errorId={validationErrors.age ? "err-age" : undefined} />
+            {validationErrors.age && <p className="field-error" id="err-age">{validationErrors.age}</p>}
             <label className="field"><span>City</span><input name="city" value={formData.city} onChange={handleChange} aria-invalid={Boolean(validationErrors.city)} /></label>
             {validationErrors.city && <p className="field-error">{validationErrors.city}</p>}
           </div>
@@ -404,8 +410,8 @@ export default function App() {
           <div className="grid">
             <NumberInput label="Monthly Salary" name="monthly_salary" value={formData.monthly_salary} onChange={handleChange} />
             <NumberInput label="Monthly Side Income" name="monthly_side_income" value={formData.monthly_side_income} onChange={handleChange} />
-              <NumberInput label="Expected Salary Growth (%)" name="expected_salary_growth_rate" value={formData.expected_salary_growth_rate} onChange={handleChange} />
-              {validationErrors.expected_salary_growth_rate && <p className="field-error">{validationErrors.expected_salary_growth_rate}</p>}
+              <NumberInput label="Expected Salary Growth (%)" name="expected_salary_growth_rate" value={formData.expected_salary_growth_rate} onChange={handleChange} errorId={validationErrors.expected_salary_growth_rate ? "err-growth" : undefined} />
+              {validationErrors.expected_salary_growth_rate && <p className="field-error" id="err-growth">{validationErrors.expected_salary_growth_rate}</p>}
           </div>
         )}
 
@@ -434,8 +440,8 @@ export default function App() {
               <NumberInput label="80C Investments" name="tax_saving_80c" value={formData.tax_saving_80c} onChange={handleChange} />
               <NumberInput label="80D Investments" name="tax_saving_80d" value={formData.tax_saving_80d} onChange={handleChange} />
               <NumberInput label="NPS Investment" name="nps_investment" value={formData.nps_investment} onChange={handleChange} />
-              <NumberInput label="Retirement Age" name="retirement_age" value={formData.retirement_age} onChange={handleChange} />
-              {validationErrors.retirement_age && <p className="field-error">{validationErrors.retirement_age}</p>}
+              <NumberInput label="Retirement Age" name="retirement_age" value={formData.retirement_age} onChange={handleChange} errorId={validationErrors.retirement_age ? "err-retirement-age" : undefined} />
+              {validationErrors.retirement_age && <p className="field-error" id="err-retirement-age">{validationErrors.retirement_age}</p>}
             </div>
 
             <div className="goal-wrap">
@@ -492,7 +498,7 @@ export default function App() {
       </section>
 
       {moneyHealth && (
-        <section className="card result-card">
+        <section className="card result-card" aria-label="Money Health Score results" aria-live="polite">
           <div className="score-dashboard">
             <div className="score-panel">
               <p className="eyebrow">Money Health Score</p>
@@ -540,7 +546,7 @@ export default function App() {
       )}
 
       {roadmap && (
-        <section className="card result-card">
+        <section className="card result-card" aria-label="FIRE Roadmap results" aria-live="polite">
           <h2>FIRE Roadmap</h2>
           <p>Model: {roadmap.model_used} {roadmap.fallback_used ? "(fallback mode)" : ""}</p>
           {roadmap.fallback_used && (
