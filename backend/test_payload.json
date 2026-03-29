@@ -1,0 +1,33 @@
+{
+  "name": "Aarav Sharma",
+  "age": 31,
+  "city": "Pune",
+  "monthly_salary": 98000,
+  "monthly_side_income": 12000,
+  "expected_salary_growth_rate": 10,
+  "fixed_expenses": 32000,
+  "variable_expenses": 18000,
+  "annual_expenses": 90000,
+  "emergency_savings": 210000,
+  "existing_investments": 420000,
+  "outstanding_debt": 140000,
+  "annual_debt_payment": 72000,
+  "term_insurance_cover": 6000000,
+  "health_insurance_cover": 800000,
+  "tax_saving_80c": 150000,
+  "tax_saving_80d": 25000,
+  "nps_investment": 30000,
+  "retirement_age": 58,
+  "goals": [
+    {
+      "name": "Home Down Payment",
+      "target_amount": 3500000,
+      "timeline_months": 72
+    },
+    {
+      "name": "Retirement",
+      "target_amount": 30000000,
+      "timeline_months": 324
+    }
+  ]
+}
